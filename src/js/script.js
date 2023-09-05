@@ -117,10 +117,7 @@ function renderCart() {
     );
 
     cartContent.innerHTML = `
-      <div class="flex items-center justify-center">
-        <h3 class="text-center text-3xl font-bold">Cart Items</h3>
-        <i data-close="close" class="bx bxs-x-square text-5xl absolute top-3 right-3 cursor-pointer"></i>
-      </div>
+      
       <div class="items flex flex-col gap-1 mt-5 overflow-scroll">
         ${cartItemsHTML}
       </div>
