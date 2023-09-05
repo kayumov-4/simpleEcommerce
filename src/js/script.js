@@ -1,5 +1,6 @@
 const dataContainer = document.getElementById("data-container");
 const modal = document.getElementById("modal");
+const loader = document.getElementById("loader");
 const modalContent = document.getElementById("modal-content");
 const cart = document.getElementById("cart");
 const openCart = document.getElementById("openCart");
@@ -8,6 +9,12 @@ const paginationContainer = document.getElementById("pagination");
 let data = [];
 const itemsPerPage = 12;
 let currentPage = 1;
+function setLoader() {
+  loader.classList.remove("hidden");
+}
+function delLoader() {
+  loader.classList.add("hidden");
+}
 async function fetchProducts() {
   try {
     const response = await axios.get("https://dummyjson.com/products?limit=50");
@@ -17,8 +24,16 @@ async function fetchProducts() {
     console.error("Error fetching data:", error);
   }
 }
-let cartItems = [];
 fetchProducts();
+setLoader();
+setTimeout(() => {
+  if (data) {
+    delLoader();
+  }
+}, 1000);
+
+let cartItems = [];
+
 // RRENDER MODAL HTML
 async function renderModal(id) {
   try {
@@ -38,8 +53,8 @@ async function renderModal(id) {
         <div class="flex justify-between items-center absolute bottom-3 w-[96%]">
           <a href="#" class="text-purple-600 hover:text-purple-500 text-3xl">${price} $</a>
           <div class="flex items-center justify-end gap-1">
-            <a href="#" class="h-[40px] w-[200px] flex items-center justify-center gap-3 text-white rounded bg-indigo-600">
-              <i class="bx bx-cart-add text-xl cursor-pointer"></i>
+            <a data-cart-add="${id}" href="#" class="h-[40px] w-[200px] flex items-center justify-center gap-3 text-white rounded bg-indigo-600">
+              <i data-cart-add="${id}" class="bx bx-cart-add text-xl cursor-pointer"></i>
               Add to cart
             </a>
           </div>
@@ -51,6 +66,26 @@ async function renderModal(id) {
     console.error("Error fetching item details:", error);
   }
 }
+dataContainer.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (e.target.hasAttribute("data-modal")) {
+    const id = e.target.getAttribute("data-id");
+    modal.classList.remove("hidden");
+    setLoader();
+    renderModal(id);
+    setTimeout(() => {
+      delLoader();
+    }, 1000);
+  }
+  if (e.target.hasAttribute("data-cart-add")) {
+    const selectedProduct = parseInt(e.target.getAttribute("data-cart-add"));
+    const filteredProduct = data.find((el) => el.id === selectedProduct);
+    cartItems.push(filteredProduct);
+    console.log(cartItems);
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }
+});
+
 // ------------------------------------------
 // RRENDER CART HTML
 function openCartFunc() {
@@ -65,7 +100,7 @@ function renderCart() {
   const item = JSON.parse(localStorage.getItem("cartItems"));
   console.log(item);
 
-  if (item) {
+  if (item.length) {
     const cartItemsHTML = item
       .map((item) => {
         return `
@@ -75,11 +110,12 @@ function renderCart() {
         </div>
       `;
       })
-      .join(""); // Join the array into a single string
+      .join("");
     const total = item.reduce(
       (accumulator, currentValue) => accumulator + currentValue.price,
       0
     );
+
     cartContent.innerHTML = `
       <div class="flex items-center justify-center">
         <h3 class="text-center text-3xl font-bold">Cart Items</h3>
@@ -147,29 +183,24 @@ function renderData() {
 
     dataContainer.appendChild(itemElement);
   });
-
+  setLoader();
   updatePagination();
+  setTimeout(() => {
+    delLoader();
+  }, 1000);
 }
 
-dataContainer.addEventListener("click", (e) => {
-  e.preventDefault();
-  if (e.target.hasAttribute("data-modal")) {
-    const id = e.target.getAttribute("data-id");
-    modal.classList.remove("hidden");
-    renderModal(id);
-  }
-  if (e.target.hasAttribute("data-cart-add")) {
-    const selectedProduct = parseInt(e.target.getAttribute("data-cart-add")); // Convert to number
-    const filteredProduct = data.find((el) => el.id === selectedProduct);
-    cartItems.push(filteredProduct);
-    console.log(cartItems);
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
-  }
-});
 modal.addEventListener("click", (e) => {
   e.preventDefault();
   if (e.target.hasAttribute("data-close")) {
     modal.classList.add("hidden");
+  }
+  if (e.target.hasAttribute("data-cart-add")) {
+    const selectedProduct = parseInt(e.target.getAttribute("data-cart-add"));
+    const filteredProduct = data.find((el) => el.id === selectedProduct);
+    cartItems.push(filteredProduct);
+    console.log(cartItems);
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }
 });
 
