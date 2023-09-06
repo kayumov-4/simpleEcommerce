@@ -104,6 +104,11 @@ function renderCart() {
     const cartItemsHTML = item
       .map((item) => {
         return `
+        <h3 class="text-center text-3xl font-bold">Cart Items</h3>
+          <i
+            data-close="close"
+            class="bx bxs-x-square text-5xl absolute top-3 right-3 cursor-pointer"
+          ></i>
         <div class="cart_item flex w-full h-10 items-center justify-between px-5 rounded bg-slate-300">
           <h3 class="text-xl">${item?.title}</h3>
           <p class="text-xl">${item?.price}</p>
